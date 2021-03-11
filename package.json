@@ -1,0 +1,64 @@
+{
+    "name": "fn-to-cli",
+    "version": "1.0.0",
+    "description": "Convert typescript functions to CLI.",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "bin": "./bin/bin.js",
+    "scripts": {
+        "dead-files": "unimported",
+        "spell-check": "cspell \"./**/*\"",
+        "lint": "tsc --noEmit && eslint ./src/**/*.ts --max-warnings=0",
+        "refresh-example": "cd example;rm -rf bin dist node_modules package-lock.json; npm install; npm run build",
+        "test-example": "npm run refresh-example && cd example && npm run test;",
+        "test-src": "rm -rf ./coverage && npx jest --clearCache && npx jest ./src --coverage --silent",
+        "test": "npm run test-src && npm run test-example",
+        "build-cjs": "rm -rf ./dist; npx tsc -p ./tsconfig.build.json",
+        "build-bin": "rm -rf ./bin/bin.js; node build-bin.js",
+        "build": "npm run build-cjs && npm run build-bin",
+        "pre-bump": "npm run dead-files && npm run spell-check && npm run lint && npm run test && npm run build && git add --all && git commit",
+        "release": "npm run pre-bump && npm publish --access public && npm run after-bump",
+        "bump-patch": "npm run pre-bump && npm version patch && npm publish && npm run after-bump",
+        "bump-minor": "npm run pre-bump && npm version minor && npm publish && npm run after-bump",
+        "bump-major": "npm run pre-bump && npm version major && npm publish && npm run after-bump",
+        "after-bump": "git push origin master; rm -rf ./dist ./bin"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/lillallol/fn-to-cli.git"
+    },
+    "files": [
+        "dist"
+    ],
+    "keywords": [
+        "fn",
+        "function",
+        "CLI",
+        "cli",
+        "command",
+        "line",
+        "interface",
+        "convert",
+        "typescript",
+        "generator"
+    ],
+    "author": "lillallol",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/lillallol/fn-to-cli/issues"
+    },
+    "homepage": "https://github.com/lillallol/fn-to-cli#readme",
+    "devDependencies": {
+        "@types/jest": "^26.0.20",
+        "@typescript-eslint/eslint-plugin": "^4.16.1",
+        "@typescript-eslint/parser": "^4.16.1",
+        "cspell": "^5.3.6",
+        "eslint": "^7.21.0",
+        "jest": "^26.6.3",
+        "ts-jest": "^26.5.3",
+        "unimported": "^1.7.0"
+    },
+    "dependencies": {
+        "typescript": "^4.2.3"
+    }
+}

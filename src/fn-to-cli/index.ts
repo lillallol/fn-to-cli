@@ -1,0 +1,1 @@
+export { fnToCLI } from "./fnToCLI";

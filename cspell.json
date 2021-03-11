@@ -1,0 +1,21 @@
+{
+    "language": "en",
+    "ignorePaths": [
+        "bin/**",
+        "dist/**",
+        "node_modules/**",
+        "./**/*.pdf",
+        "./**/*.mock.ts",
+        "package-lock.json",
+        "jest.config.js",
+        "coverage/**",
+        "TBD/**",
+        "TODO.md",
+        "example/node_modules/**",
+        "example/package-lock.json"
+    ],
+    "words": [
+        "lillallol",
+        "unimported"
+    ]
+}
