@@ -1,5 +1,0 @@
--   support --optionName=optionValue
--   support boolean flags without values
--   support aggregation of flags -abc
-    - throw if an option with such a flag is non boolean
-    - give true to all option that have been used like this

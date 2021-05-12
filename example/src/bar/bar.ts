@@ -1,7 +1,7 @@
 /**
  * @description
  * Some tag full description for command `bar`.
- * @CLI
+ * @CLI baz
  */
 export default function bar(_: {
     /**
@@ -18,5 +18,5 @@ export default function bar(_: {
     const { c } = _;
     let { d } = _;
     if (d === undefined) d = true;
-    console.log(`c = ${c}`);
+    console.log(`bar executed with c = ${c}, d = ${d}`);
 }

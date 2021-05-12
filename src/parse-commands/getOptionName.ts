@@ -1,30 +1,26 @@
 import { isIdentifier, Node, TypeElement, unescapeLeadingUnderscores } from "typescript";
-import { tagUnindent } from "../utils/index";
+import { errorMessages } from "../errorMessages";
+import { constants } from "../constants";
 
 const memoizationTable: Map<Node, string> = new Map();
 
-export function getOptionName(option: TypeElement): string {
+export function getOptionName(_: { option: TypeElement; commandName: string }): string {
+    const { commandName, option } = _;
     const memoizedValue = memoizationTable.get(option);
+    const { reservedOptionNames } = constants;
+
     if (typeof memoizedValue === "string") return memoizedValue;
 
     const { name: memberIdentifier } = option;
     if (memberIdentifier === undefined || !isIdentifier(memberIdentifier)) {
-        throw Error(_errorMessages.memberHasNonIdentifierName);
+        throw Error(errorMessages.memberHasNonIdentifierName);
     }
     const name = unescapeLeadingUnderscores(memberIdentifier.escapedText);
-    if (name === "help") throw Error(_errorMessages.optionWithNameHelpIsReserved);
+
+    if (reservedOptionNames.includes(name)) {
+        throw Error(errorMessages.optionCanNotHaveReservedName(commandName, name));
+    }
 
     memoizationTable.set(option, name);
     return name;
 }
-
-export const _errorMessages = {
-    memberHasNonIdentifierName: "member has non identifier name",
-    optionWithNameHelpIsReserved: tagUnindent`
-        Option with name:
-
-            help
-
-        is reserved.
-    `,
-};

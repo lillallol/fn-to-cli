@@ -1,105 +1,48 @@
 import { FunctionDeclaration, JSDoc, TypeElement } from "typescript";
 import { getJsDocOfAstNode } from "../utils/index";
-import { tagUnindent } from "../utils/index";
+import { errorMessages, internalErrorMessage } from "../errorMessages";
 import { getCommandName } from "./getCommandName";
 import { getOptionName } from "./getOptionName";
 
 export function _getJSDocCommentStrict(_: {
     astNode: TypeElement | FunctionDeclaration;
-    absolutePathToInput: string;
     optionName: string | undefined;
     commandName: string;
 }): JSDoc {
-    const { absolutePathToInput, astNode, commandName, optionName } = _;
+    const { astNode, commandName, optionName } = _;
     const jsDoc = getJsDocOfAstNode(astNode);
     if (jsDoc === undefined) {
-        throw Error(_errorMessages.astNodeHasNoJSDocComment({ optionName, commandName, absolutePathToInput }));
+        if (optionName !== undefined) {
+            throw Error(errorMessages.astNodeHasNoJSDocComment({ optionName, commandName }));
+        }
+        //For the following error message to occur that means that a function without jsdoc comment was picked to be
+        //converted to CLI. Buw how was that function was picked without having a @CLI jsdoc tag? And this is the reason why
+        //this error is an internal library error.
+        throw Error(internalErrorMessage.internalLibraryErrorMessage);
     }
     if (jsDoc.length > 1) {
-        throw Error(_errorMessages.astNodeHasMoreThanOneJSDocComment({ optionName, commandName, absolutePathToInput }));
+        throw Error(errorMessages.astNodeHasMoreThanOneJSDocComment({ optionName, commandName }));
     }
     const [JSDoc] = jsDoc;
     return JSDoc;
 }
 
-export function getCommandJSDocCommentStrict(_: { fn: FunctionDeclaration; absolutePathToInput: string }): JSDoc {
-    const { absolutePathToInput, fn } = _;
-    const commandName = getCommandName(fn);
+export function getCommandJSDocCommentStrict(_: { fn: FunctionDeclaration }): JSDoc {
+    const { fn } = _;
+    const { commandName } = getCommandName({ fn });
     return _getJSDocCommentStrict({
         astNode: fn,
-        absolutePathToInput,
         commandName,
         optionName: undefined,
     });
 }
 
-export function getOptionJSDocCommentStrict(_: {
-    commandName: string;
-    option: TypeElement;
-    absolutePathToInput: string;
-}): JSDoc {
-    const { absolutePathToInput, option, commandName } = _;
-    const optionName = getOptionName(option);
+export function getOptionJSDocCommentStrict(_: { commandName: string; option: TypeElement }): JSDoc {
+    const { option, commandName } = _;
+    const optionName = getOptionName({ option, commandName });
     return _getJSDocCommentStrict({
         astNode: option,
         commandName,
         optionName,
-        absolutePathToInput,
     });
 }
-
-//@TODO are these error messages formatted properly?
-export const _errorMessages = {
-    astNodeHasNoJSDocComment: (_: {
-        commandName: string;
-        optionName: string | undefined;
-        absolutePathToInput: string;
-    }): string => tagUnindent`
-        Command with name:
-
-            ${_.commandName}
-
-        in path:
-
-            ${_.absolutePathToInput}
-        
-        ${
-            _.optionName === undefined
-                ? ""
-                : [
-                      tagUnindent`
-        has option of name:
-
-            ${_.optionName}
-
-        that`,
-                  ]
-        } does not have JSDoc comment.
-    `,
-    astNodeHasMoreThanOneJSDocComment: (_: {
-        commandName: string;
-        optionName: string | undefined;
-        absolutePathToInput: string;
-    }): string => tagUnindent`
-        Command with name:
-
-            ${_.commandName}
-
-        in path:
-
-            ${_.absolutePathToInput}
-        
-        ${
-            _.optionName === undefined
-                ? ""
-                : [
-                      tagUnindent`
-        has option of name:
-
-            ${_.optionName}
-
-        that`,
-                  ]
-        } has more than one JSDoc comment.
-    `,
-};

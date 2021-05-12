@@ -1,6 +1,11 @@
+import { errorMessages, internalErrorMessage } from "../errorMessages";
 import { parsedCommandForCli } from "../types";
-import { internalLibraryErrorMessage, tagUnindent } from "../utils";
 
+/**
+ * @description
+ * This function has also the responsibility for throwing error for invalid command name taking into account
+ * strict and non-strict mode.
+ */
 export function getParsedCommandAndCleanArgv(_: {
     argv: string[];
     strict: boolean;
@@ -9,62 +14,34 @@ export function getParsedCommandAndCleanArgv(_: {
     const { argv, parsedCommands, strict } = _;
 
     const candidateCommandName: string | undefined = argv[2];
-    const candidateParsedCommand = parsedCommands.find(({ command }) => command.name === candidateCommandName);
+    const candidateParsedCommand = parsedCommands.find(({ commandName }) => commandName === candidateCommandName);
     const isSingleCommandCli = parsedCommands.length === 1;
     const isMultiCommandCli = !isSingleCommandCli;
-    const commandNames = parsedCommands.map(({ command }) => command.name);
+    const commandNames = parsedCommands.map(({ commandName }) => commandName);
 
+    // candidate parsed command name is legit and we are fine for both strict non strict mode
     if (candidateParsedCommand !== undefined) {
         return {
             cleanArgv: argv.slice(3),
             parsedCommand: candidateParsedCommand,
         };
     }
+
+    // the rest of the code deals with candidateParsedCommand === undefined
+
+    // candidate parsed command is not a command, but this is fine since we are in non strict mode for single command cli
     if (candidateParsedCommand === undefined && isSingleCommandCli && !strict) {
         return {
             cleanArgv: argv.slice(2),
             parsedCommand: parsedCommands[0],
         };
     }
-    // @TODO maybe print cli syntax here also?
+
     if (candidateCommandName === undefined || candidateCommandName[0] === "-") {
-        throw Error(_errorMessages.youHaveNotProvidedACommand(commandNames));
-    }
-    if (candidateParsedCommand === undefined && isSingleCommandCli && strict) {
-        throw Error(_errorMessages.youHaveToProvideCommandInStrictMode(parsedCommands[0].command.name));
+        throw Error(errorMessages.youHaveNotProvidedACommand(commandNames));
     }
     if (candidateParsedCommand === undefined && (isMultiCommandCli || strict)) {
-        throw Error(_errorMessages.providedCommandDoesNotExist(argv[2], commandNames));
+        throw Error(errorMessages.providedCommandDoesNotExist(argv[2], commandNames));
     }
-    throw Error(internalLibraryErrorMessage);
+    throw Error(internalErrorMessage.internalLibraryErrorMessage);
 }
-
-export const _errorMessages = {
-    youHaveNotProvidedACommand : (commandNames : string[]): string => tagUnindent`
-        You have not provided a command.
-
-        Here are the available commands:
-
-            ${[commandNames.join("\n")]}
-
-    `,
-    youHaveToProvideCommandInStrictMode: (commandName: string): string => tagUnindent`
-        Command with name:
-
-            ${commandName}
-
-        was not provided. You have to provide it in strict mode.
-    `,
-    providedCommandDoesNotExist: (commandName: string, commandNames: string[]): string => tagUnindent`
-        Provided command:
-
-            ${commandName}
-
-        does not exist.
-
-        Here are the available commands:
-
-            ${[commandNames.join("\n")]}
-
-    `,
-};

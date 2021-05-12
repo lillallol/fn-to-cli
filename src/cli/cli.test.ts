@@ -1,6 +1,4 @@
-//@TODO I should test that the documentation for certain properties is printed
-//@TODO this test are bad need to update them, add more helpful descriptions
-
+import { errorMessages } from "../errorMessages";
 import { parsedCommandForCli } from "../types";
 import { cliFactory, ICli } from "./cli";
 import { printCliCommandsDocumentation } from "./printCliCommandsDocumentation";
@@ -36,16 +34,18 @@ const parsedCommands: parsedCommandForCli[] = [
                 isOptional: true,
                 optionName: "b",
                 type: "boolean",
-                defaultValue: true,
-                flag: "v",
+                defaultValue: "true",
+                flag: "V",
             },
         ],
+        commandName: "foo",
     },
     {
         description: `Some tag full description for command \`bar\`.`,
         command: function bar(_: { c: boolean; d?: boolean }): void {
             hasBeenCalled.bar = _;
         },
+        commandName: "baz",
         options: [
             {
                 description: `Some tag less description for option \`c\` of command \`bar\`.`,
@@ -81,484 +81,306 @@ beforeEach(() => {
 });
 
 describe(cliFactory.name, () => {
-    describe("<cli-name> [-h|--help]", () => {
-        describe("strict mode", () => {
-            test("multi command cli", () => {
-                cli({
-                    parsedCommands,
-                    argv: ["mock", "mock", "--help"],
-                    cliName: "myCustomCliName",
-                    cliVersion: "myCustomCliVersion",
-                    strict: true,
-                });
-                expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                    printCliCommandsDocumentation: true,
-                    printCliOptionsDocumentation: false,
-                    bar: null,
-                    foo: null,
-                });
-            });
-            test("single command", () => {
-                cli({
-                    parsedCommands: [parsedCommands[0]],
-                    argv: ["mock", "mock", "--help"],
-                    cliName: "myCustomCliName",
-                    cliVersion: "myCustomCliVersion",
-                    strict: true,
-                });
-                expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                    printCliCommandsDocumentation: true,
-                    printCliOptionsDocumentation: false,
-                    bar: null,
-                    foo: null,
-                });
-            });
+    test.each<[{ keyword: "--help" | "-h" }]>([
+        [
+            {
+                keyword: "--help",
+            },
+        ],
+        [
+            {
+                keyword: "-h",
+            },
+        ],
+    ])("[-h|--help]", ({ keyword }) => {
+        cli({
+            parsedCommands,
+            argv: ["mock", "mock", keyword],
+            cliName: "myCustomCliName",
+            cliVersion: "myCustomCliVersion",
+            strict: false,
         });
-        describe("non strict mode", () => {
-            test("multi command cli", () => {
-                cli({
-                    parsedCommands,
-                    argv: ["mock", "mock", "--help"],
-                    cliName: "myCustomCliName",
-                    cliVersion: "myCustomCliVersion",
-                    strict: false,
-                });
-                expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                    printCliCommandsDocumentation: true,
-                    printCliOptionsDocumentation: false,
-                    bar: null,
-                    foo: null,
-                });
-            });
-            test("single command cli", () => {
-                cli({
-                    parsedCommands: [parsedCommands[0]],
-                    argv: ["mock", "mock", "--help"],
-                    cliName: "myCustomCliName",
-                    cliVersion: "myCustomCliVersion",
-                    strict: false,
-                });
-                expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                    printCliCommandsDocumentation: false,
-                    printCliOptionsDocumentation: true,
-                    bar: null,
-                    foo: null,
-                });
-            });
+        expect(hasBeenCalled).toEqual<hasBeenCalled>({
+            printCliCommandsDocumentation: true,
+            printCliOptionsDocumentation: false,
+            bar: null,
+            foo: null,
         });
     });
-    describe("<cli-name> <value>+ [-h|--help]", () => {
-        describe("strict mode", () => {
-            describe("for multi command cli", () => {
-                test("<command> --help", () => {
-                    cli({
-                        parsedCommands,
-                        argv: ["mock", "mock", "foo", "--help"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: true,
-                    });
-                    expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                        printCliCommandsDocumentation: false,
-                        printCliOptionsDocumentation: true,
-                        bar: null,
-                        foo: null,
-                    });
-                });
-                test("<non-valid-command>+ --help", () => {
-                    expect(() =>
-                        cli({
-                            parsedCommands,
-                            argv: ["mock", "mock", "fo", "--help"],
-                            cliName: "myCustomCliName",
-                            cliVersion: "myCustomCliVersion",
-                            strict: true,
-                        })
-                    ).toThrow();
-                    expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                        printCliCommandsDocumentation: false,
-                        printCliOptionsDocumentation: false,
-                        bar: null,
-                        foo: null,
-                    });
-                });
-                test("[<option>|<flag>]+ --help", () => {
-                    expect(() =>
-                        cli({
-                            parsedCommands,
-                            argv: ["mock", "mock", "--a", "--help"],
-                            cliName: "myCustomCliName",
-                            cliVersion: "myCustomCliVersion",
-                            strict: true,
-                        })
-                    ).toThrow();
-                    expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                        printCliCommandsDocumentation: false,
-                        printCliOptionsDocumentation: false,
-                        bar: null,
-                        foo: null,
-                    });
-                });
-            });
-            describe("for single command cli", () => {
-                test("<command> --help", () => {
-                    cli({
-                        parsedCommands: [parsedCommands[0]],
-                        argv: ["mock", "mock", "foo", "--help"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: true,
-                    });
-                    expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                        printCliCommandsDocumentation: false,
-                        printCliOptionsDocumentation: true,
-                        bar: null,
-                        foo: null,
-                    });
-                });
-                test("<non-valid-command>+ --help", () => {
-                    expect(() =>
-                        cli({
-                            parsedCommands: [parsedCommands[0]],
-                            argv: ["mock", "mock", "fo", "--help"],
-                            cliName: "myCustomCliName",
-                            cliVersion: "myCustomCliVersion",
-                            strict: true,
-                        })
-                    ).toThrow();
-                    expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                        printCliCommandsDocumentation: false,
-                        printCliOptionsDocumentation: false,
-                        bar: null,
-                        foo: null,
-                    });
-                });
-                test("[<option>|<flag>]+ --help", () => {
-                    expect(() =>
-                        cli({
-                            parsedCommands: [parsedCommands[0]],
-                            argv: ["mock", "mock", "--a", "--help"],
-                            cliName: "myCustomCliName",
-                            cliVersion: "myCustomCliVersion",
-                            strict: true,
-                        })
-                    ).toThrow();
-                    expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                        printCliCommandsDocumentation: false,
-                        printCliOptionsDocumentation: false,
-                        bar: null,
-                        foo: null,
-                    });
-                });
-            });
+    test.each<[{ keyword: "--help" | "-h" }]>([
+        [
+            {
+                keyword: "--help",
+            },
+        ],
+        [
+            {
+                keyword: "-h",
+            },
+        ],
+    ])("<command> [-h|--help]", ({ keyword }) => {
+        cli({
+            parsedCommands,
+            argv: ["mock", "mock", "foo", keyword],
+            cliName: "myCustomCliName",
+            cliVersion: "myCustomCliVersion",
+            strict: false,
         });
-        describe("non strict mode", () => {
-            describe("for multi command cli", () => {
-                test("<command> --help", () => {
-                    cli({
-                        parsedCommands,
-                        argv: ["mock", "mock", "foo", "--help"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: false,
-                    });
-                    expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                        printCliCommandsDocumentation: false,
-                        printCliOptionsDocumentation: true,
-                        bar: null,
-                        foo: null,
-                    });
-                });
-                test("<non-valid-command>+ --help", () => {
-                    expect(() =>
-                        cli({
-                            parsedCommands,
-                            argv: ["mock", "mock", "fo", "--help"],
-                            cliName: "myCustomCliName",
-                            cliVersion: "myCustomCliVersion",
-                            strict: false,
-                        })
-                    ).toThrow();
-                    expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                        printCliCommandsDocumentation: false,
-                        printCliOptionsDocumentation: false,
-                        bar: null,
-                        foo: null,
-                    });
-                });
-                test("[<option>|<flag>]+ --help", () => {
-                    expect(() =>
-                        cli({
-                            parsedCommands,
-                            argv: ["mock", "mock", "--a", "--help"],
-                            cliName: "myCustomCliName",
-                            cliVersion: "myCustomCliVersion",
-                            strict: false,
-                        })
-                    ).toThrow();
-                    expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                        printCliCommandsDocumentation: false,
-                        printCliOptionsDocumentation: false,
-                        bar: null,
-                        foo: null,
-                    });
-                });
-            });
-            describe("for single command cli", () => {
-                test("<command> --help", () => {
-                    cli({
-                        parsedCommands: [parsedCommands[0]],
-                        argv: ["mock", "mock", "foo", "--help"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: false,
-                    });
-                    expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                        printCliCommandsDocumentation: false,
-                        printCliOptionsDocumentation: true,
-                        bar: null,
-                        foo: null,
-                    });
-                });
-                test("<non-valid-command>+ --help", () => {
-                    expect(() =>
-                        cli({
-                            parsedCommands: [parsedCommands[0]],
-                            argv: ["mock", "mock", "fo", "--help"],
-                            cliName: "myCustomCliName",
-                            cliVersion: "myCustomCliVersion",
-                            strict: false,
-                        })
-                    ).toThrow();
-                    expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                        printCliCommandsDocumentation: false,
-                        printCliOptionsDocumentation: true,
-                        bar: null,
-                        foo: null,
-                    });
-                });
-                test("[<option>|<flag>]+ --help", () => {
-                    expect(() =>
-                        cli({
-                            parsedCommands: [parsedCommands[0]],
-                            argv: ["mock", "mock", "--aa", "--help"],
-                            cliName: "myCustomCliName",
-                            cliVersion: "myCustomCliVersion",
-                            strict: false,
-                        })
-                    ).toThrow();
-                    expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                        printCliCommandsDocumentation: false,
-                        printCliOptionsDocumentation: true,
-                        bar: null,
-                        foo: null,
-                    });
-                });
-            });
+        expect(hasBeenCalled).toEqual<hasBeenCalled>({
+            printCliCommandsDocumentation: false,
+            printCliOptionsDocumentation: true,
+            bar: null,
+            foo: null,
         });
     });
-    describe("<cli-name> <value>+", () => {
-        describe("strict mode", () => {
-            test("multi command cli", () => {
-                cli({
-                    parsedCommands,
-                    argv: ["mock", "mock", "foo", "--a", "A", "--b", "true"],
-                    cliName: "myCustomCliName",
-                    cliVersion: "myCustomCliVersion",
-                    strict: true,
-                });
-                expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                    printCliCommandsDocumentation: false,
-                    printCliOptionsDocumentation: false,
-                    bar: null,
-                    foo: {
-                        a: "A",
-                        b: true,
-                    },
-                });
-                expect(() =>
-                    cli({
-                        parsedCommands,
-                        argv: ["mock", "mock", "foo", "--a", "A", "--b", "1"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: true,
-                    })
-                ).toThrow();
-                expect(() =>
-                    cli({
-                        parsedCommands,
-                        argv: ["mock", "mock", "foo", "--a", "A", "-bb", "true"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: true,
-                    })
-                ).toThrow();
-            });
-            test("single command cli", () => {
-                cli({
-                    parsedCommands: [parsedCommands[0]],
-                    argv: ["mock", "mock", "foo", "--a", "A", "--b", "true"],
-                    cliName: "myCustomCliName",
-                    cliVersion: "myCustomCliVersion",
-                    strict: true,
-                });
-                expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                    printCliCommandsDocumentation: false,
-                    printCliOptionsDocumentation: false,
-                    bar: null,
-                    foo: {
-                        a: "A",
-                        b: true,
-                    },
-                });
-                expect(() =>
-                    cli({
-                        parsedCommands: [parsedCommands[0]],
-                        argv: ["mock", "mock", "--a", "A", "--b", "true"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: true,
-                    })
-                ).toThrow();
-                expect(() =>
-                    cli({
-                        parsedCommands: [parsedCommands[0]],
-                        argv: ["mock", "mock", "foo", "--a", "A", "--b", "1"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: true,
-                    })
-                ).toThrow();
-                expect(() =>
-                    cli({
-                        parsedCommands: [parsedCommands[0]],
-                        argv: ["mock", "mock", "--a", "A", "--b", "1"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: true,
-                    })
-                ).toThrow();
-                expect(() =>
-                    cli({
-                        parsedCommands: [parsedCommands[0]],
-                        argv: ["mock", "mock", "foo", "--a", "A", "-bb", "true"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: true,
-                    })
-                ).toThrow();
-                expect(() =>
-                    cli({
-                        parsedCommands: [parsedCommands[0]],
-                        argv: ["mock", "mock", "--a", "A", "-bb", "true"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: true,
-                    })
-                ).toThrow();
-            });
+    test.each<[{ keyword: "--help" | "-h" }]>([
+        [
+            {
+                keyword: "--help",
+            },
+        ],
+        [
+            {
+                keyword: "-h",
+            },
+        ],
+    ])("<non-valid-command> [-h|--help]", ({ keyword }) => {
+        expect(() =>
+            cli({
+                parsedCommands,
+                argv: ["mock", "mock", "fo", keyword],
+                cliName: "myCustomCliName",
+                cliVersion: "myCustomCliVersion",
+                strict: false,
+            })
+        ).toThrow(errorMessages.providedCommandDoesNotExist("fo", ["foo", "baz"]));
+        expect(hasBeenCalled).toEqual<hasBeenCalled>({
+            printCliCommandsDocumentation: false,
+            printCliOptionsDocumentation: false,
+            bar: null,
+            foo: null,
         });
-        describe("non strict mode", () => {
-            test("multi command cli", () => {
+    });
+    test.each<[{ keyword: "--help" | "-h" }]>([
+        [
+            {
+                keyword: "--help",
+            },
+        ],
+        [
+            {
+                keyword: "-h",
+            },
+        ],
+    ])("<command> [<option>|<flag>]+ [-h|--help]", ({ keyword }) => {
+        expect(() =>
+            cli({
+                parsedCommands,
+                argv: ["mock", "mock", "foo", "--a", "-V", keyword],
+                cliName: "myCustomCliName",
+                cliVersion: "myCustomCliVersion",
+                strict: false,
+            })
+        ).not.toThrow();
+        expect(hasBeenCalled).toEqual<hasBeenCalled>({
+            printCliCommandsDocumentation: false,
+            printCliOptionsDocumentation: true,
+            bar: null,
+            foo: null,
+        });
+    });
+    test.each<[{ keyword: "--help" | "-h" }]>([
+        [
+            {
+                keyword: "--help",
+            },
+        ],
+        [
+            {
+                keyword: "-h",
+            },
+        ],
+    ])("<command> [<non-valid-option>|<flag>]+ [-h|--help]", () => {
+        expect(() =>
+            cli({
+                parsedCommands,
+                argv: ["mock", "mock", "foo", "--bb", "-V", "--help"],
+                cliName: "myCustomCliName",
+                cliVersion: "myCustomCliVersion",
+                strict: false,
+            })
+        ).toThrow(errorMessages.helpGotBadOptionFlag("bb", "foo", false));
+        expect(hasBeenCalled).toEqual<hasBeenCalled>({
+            printCliCommandsDocumentation: false,
+            printCliOptionsDocumentation: true,
+            bar: null,
+            foo: null,
+        });
+    });
+    test.each<[{ keyword: "--help" | "-h" }]>([
+        [
+            {
+                keyword: "--help",
+            },
+        ],
+        [
+            {
+                keyword: "-h",
+            },
+        ],
+    ])("<command> [<option>|<non-valid-flag>]+ [-h|--help]", () => {
+        expect(() =>
+            cli({
+                parsedCommands,
+                argv: ["mock", "mock", "foo", "-f", "--a", "--help"],
+                cliName: "myCustomCliName",
+                cliVersion: "myCustomCliVersion",
+                strict: false,
+            })
+        ).toThrow(errorMessages.helpGotBadOptionFlag("f", "foo", true));
+        expect(hasBeenCalled).toEqual<hasBeenCalled>({
+            printCliCommandsDocumentation: false,
+            printCliOptionsDocumentation: true,
+            bar: null,
+            foo: null,
+        });
+    });
+    test.each<[{ keyword: "--help" | "-h" }]>([
+        [
+            {
+                keyword: "--help",
+            },
+        ],
+        [
+            {
+                keyword: "-h",
+            },
+        ],
+    ])("<command> <non-option-non-flag> [-h|--help]", () => {
+        expect(() =>
+            cli({
+                parsedCommands,
+                argv: ["mock", "mock", "foo", "fa", "--help"],
+                cliName: "myCustomCliName",
+                cliVersion: "myCustomCliVersion",
+                strict: false,
+            })
+        ).toThrow(errorMessages.helpGotBadArgument("fa"));
+        expect(hasBeenCalled).toEqual<hasBeenCalled>({
+            printCliCommandsDocumentation: false,
+            printCliOptionsDocumentation: true,
+            bar: null,
+            foo: null,
+        });
+    });
+
+    // ####################################################
+
+    it("<command> [(<option>|<flag>) <value>]+", () => {
+        expect(() =>
+            cli({
+                parsedCommands,
+                argv: ["mock", "mock", "foo", "--a", `"A"`, "--b", "true"],
+                cliName: "myCustomCliName",
+                cliVersion: "myCustomCliVersion",
+                strict: true,
+            })
+        ).not.toThrow();
+        expect(hasBeenCalled).toEqual<hasBeenCalled>({
+            printCliCommandsDocumentation: false,
+            printCliOptionsDocumentation: false,
+            bar: null,
+            foo: {
+                a: "A",
+                b: true,
+            },
+        });
+    });
+    it("multi-command : [(<option>|<flag>) <value>]+", () => {
+        expect(() =>
+            cli({
+                parsedCommands,
+                argv: ["mock", "mock", "--a", `"A"`, "--b", "true"],
+                cliName: "myCustomCliName",
+                cliVersion: "myCustomCliVersion",
+                strict: true,
+            })
+        ).toThrow(errorMessages.youHaveNotProvidedACommand(["foo", "baz"]));
+        expect(hasBeenCalled).toEqual<hasBeenCalled>({
+            printCliCommandsDocumentation: false,
+            printCliOptionsDocumentation: false,
+            bar: null,
+            foo: null,
+        });
+    });
+    // it.todo("does not throw error when given or not given command name for single command CLI non strict mode",() => {});
+    // it.todo("does not throw error when single command strict mode is not given command",() => {});
+    describe("it throws error", () => {
+        test("for non existing flag", () => {
+            expect(() =>
                 cli({
                     parsedCommands,
-                    argv: ["mock", "mock", "foo", "--a", "A", "--b", "true"],
+                    argv: ["mock", "mock", "foo", "--a", `"A"`, "-bb", "true"],
                     cliName: "myCustomCliName",
                     cliVersion: "myCustomCliVersion",
                     strict: true,
-                });
-                expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                    printCliCommandsDocumentation: false,
-                    printCliOptionsDocumentation: false,
-                    bar: null,
-                    foo: {
-                        a: "A",
-                        b: true,
-                    },
-                });
-                expect(() =>
-                    cli({
-                        parsedCommands,
-                        argv: ["mock", "mock", "foo", "--a", "A", "--b", "1"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: true,
-                    })
-                ).toThrow();
-                expect(() =>
-                    cli({
-                        parsedCommands,
-                        argv: ["mock", "mock", "foo", "--a", "A", "-bb", "true"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: true,
-                    })
-                ).toThrow();
-            });
-            test("single command cli", () => {
+                })
+            ).toThrow(errorMessages.flagDoesNotExistForGivenCommand("bb", "foo"));
+        });
+        test("for non existing option", () => {
+            expect(() =>
                 cli({
-                    parsedCommands: [parsedCommands[0]],
-                    argv: ["mock", "mock", "foo", "--a", "A", "--b", "true"],
+                    parsedCommands,
+                    argv: ["mock", "mock", "foo", "--aa", `"A"`, "--b", "true"],
                     cliName: "myCustomCliName",
                     cliVersion: "myCustomCliVersion",
-                    strict: false,
-                });
-                expect(hasBeenCalled).toEqual<hasBeenCalled>({
-                    printCliCommandsDocumentation: false,
-                    printCliOptionsDocumentation: false,
-                    bar: null,
-                    foo: {
-                        a: "A",
-                        b: true,
-                    },
-                });
-                expect(() =>
-                    cli({
-                        parsedCommands: [parsedCommands[0]],
-                        argv: ["mock", "mock", "--a", "A", "--b", "true"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: false,
-                    })
-                ).not.toThrow();
-                expect(() =>
-                    cli({
-                        parsedCommands: [parsedCommands[0]],
-                        argv: ["mock", "mock", "foo", "--a", "A", "--b", "1"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: false,
-                    })
-                ).toThrow();
-                expect(() =>
-                    cli({
-                        parsedCommands: [parsedCommands[0]],
-                        argv: ["mock", "mock", "--a", "A", "--b", "1"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: false,
-                    })
-                ).toThrow();
-                expect(() =>
-                    cli({
-                        parsedCommands: [parsedCommands[0]],
-                        argv: ["mock", "mock", "foo", "--a", "A", "-bb", "true"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: false,
-                    })
-                ).toThrow();
-                expect(() =>
-                    cli({
-                        parsedCommands: [parsedCommands[0]],
-                        argv: ["mock", "mock", "--a", "A", "-bb", "true"],
-                        cliName: "myCustomCliName",
-                        cliVersion: "myCustomCliVersion",
-                        strict: false,
-                    })
-                ).toThrow();
-            });
+                    strict: true,
+                })
+            ).toThrow(errorMessages.invalidOptionName("aa", "foo"));
+        });
+        test("when a required parameter has not been provided a value", () => {
+            expect(() =>
+                cli({
+                    parsedCommands,
+                    argv: ["mock", "mock", "foo", "--b", "true"],
+                    cliName: "myCustomCliName",
+                    cliVersion: "myCustomCliVersion",
+                    strict: true,
+                })
+            ).toThrow(errorMessages.requiredParametersMissingValues(["a"]));
+        });
+        test(`when a parameter does not start with "-"`, () => {
+            expect(() =>
+                cli({
+                    parsedCommands,
+                    argv: ["mock", "mock", "foo", "--a", `"A"`, "b", "true"],
+                    cliName: "myCustomCliName",
+                    cliVersion: "myCustomCliVersion",
+                    strict: true,
+                })
+            ).toThrow(errorMessages.invalidArgumentName("b"));
+        });
+        test(`when an option does not exist for the given command`, () => {
+            expect(() =>
+                cli({
+                    parsedCommands,
+                    argv: ["mock", "mock", "foo", "--a", `"A"`, "--bb", "true"],
+                    cliName: "myCustomCliName",
+                    cliVersion: "myCustomCliVersion",
+                    strict: true,
+                })
+            ).toThrow(errorMessages.invalidOptionName("bb", "foo"));
+        });
+        test(`when a parameter is given two or more values`, () => {
+            expect(() =>
+                cli({
+                    parsedCommands,
+                    argv: ["mock", "mock", "foo", "--a", `"A"`, "--b", "true", "-V", "false"],
+                    cliName: "myCustomCliName",
+                    cliVersion: "myCustomCliVersion",
+                    strict: true,
+                })
+            ).toThrow(errorMessages.optionFlagGivenValueMoreThanOnce("b", "V"));
         });
     });
 });

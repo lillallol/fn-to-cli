@@ -31,18 +31,20 @@ module.exports = {
     // ],
 
     // Indicates which provider should be used to instrument code for coverage
-    coverageProvider: "v8",
+    // coverageProvider: "babel",
 
     // A list of reporter names that Jest uses when writing coverage reports
-    // coverageReporters: [
-    //   "json",
-    //   "text",
-    //   "lcov",
-    //   "clover"
-    // ],
+    coverageReporters: ["text", "lcov"],
 
     // An object that configures minimum threshold enforcement for coverage results
-    // coverageThreshold: undefined,
+    // coverageThreshold: {
+    //     global: {
+    //         branches: 90,
+    //         functions: 90,
+    //         lines: 90,
+    //         statements: -10,
+    //     },
+    // },
 
     // A path to a custom dependency extractor
     // dependencyExtractor: undefined,

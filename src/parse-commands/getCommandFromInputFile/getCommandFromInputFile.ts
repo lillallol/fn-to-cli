@@ -1,10 +1,11 @@
 import { FunctionDeclaration, isFunctionDeclaration, Statement, TypeLiteralNode } from "typescript";
-import { getJsDocOfAstNode, getStatementsOf, tagUnindent } from "../../utils/index";
+import { getJsDocOfAstNode, getStatementsOf } from "../../utils/index";
 import { hasJSDocTagOfName } from "../../utils/index";
+import { errorMessages } from "../../errorMessages";
 import { throwIfFnHasMoreThanOneParameters } from "./throwIfFnHasMoreThanOneParameters";
 import { throwIfFnHasNoParameters } from "./throwIfFnHasNoParameters";
 import { throwIfInputCanNotBeAccessed } from "./throwIfInputCanNotBeAccessed";
-import { throwIfParameterIsNotObjectLiteral } from "./throwIfParameterIsNotObjectLiteral";
+import { getParameterAstNode } from "./getParameter";
 
 /**
  * @description
@@ -37,21 +38,22 @@ export function getCommandFromInputFileSoft(_: {
 
     const fns = getStatementsOf(absolutePathToInputFile).filter(isFunctionDeclarationWithJSDocTagCLI);
 
-    fns.forEach((fn) => {
+    return fns.map((fn) => {
         const { name: functionNameIdentifier } = fn;
         if (functionNameIdentifier === undefined) {
-            throw Error(_errorMessages.functionHasNoName(absolutePathToInputFile));
+            throw Error(errorMessages.commandHasNoName(absolutePathToInputFile));
         }
         const functionName = functionNameIdentifier.text;
 
-        throwIfFnHasNoParameters(fn, absolutePathToInputFile, functionName);
-        throwIfFnHasMoreThanOneParameters(fn, absolutePathToInputFile, functionName);
-    });
+        throwIfFnHasNoParameters(fn, functionName);
+        throwIfFnHasMoreThanOneParameters(fn, functionName);
+        const parameter = getParameterAstNode(fn,functionName);
 
-    return fns.map((fn) => ({
-        fn: fn,
-        parameter: throwIfParameterIsNotObjectLiteral(fn),
-    }));
+        return {
+            fn,
+            parameter
+        }
+    });
 }
 
 function isFunctionDeclarationWithJSDocTagCLI(s: Statement): s is FunctionDeclaration {
@@ -59,15 +61,3 @@ function isFunctionDeclarationWithJSDocTagCLI(s: Statement): s is FunctionDeclar
     if (jsDoc === undefined) return false;
     return isFunctionDeclaration(s) && hasJSDocTagOfName(jsDoc[0], "CLI");
 }
-
-export const _errorMessages = {
-    functionHasNoName: (absolutePathToInputFile: string): string => tagUnindent`
-        In path:
-
-            ${absolutePathToInputFile}
-
-        there is a function with @CLI JSDoc that has no name.
-
-        Add a name to the function.
-    `,
-};

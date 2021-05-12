@@ -19,16 +19,13 @@ const jsDoc = getJsDocOfAstNode(
     declare type = number;
 `).statements[0]
 );
-if (jsDoc === undefined) throw Error(); //@TODO
+if (jsDoc === undefined) throw Error("the test needs to have non undefined jsdoc");
 const JSDoc: JSDoc = jsDoc[0];
 
 describe(getJSDocTagValue.name, () => {
     it("returns the value of the specified jsDoc tag", () => {
         expect(getJSDocTagValue(JSDoc, "customTag")).toEqual(["hello world", null, "bye world"]);
     });
-    // it("returns the tag less comment for provided jsDoc tag name being `null`", () => {
-    //     expect(getJSDocTagValue(JSDoc, null)).toEqual([`I am the tag less comment`]);
-    // });
     it("throws when the provided ast node does not have the specified jsDoc tag", () => {
         const tagName = "myCustomTag";
         expect(getJSDocTagValue(JSDoc, tagName)).toEqual([]);

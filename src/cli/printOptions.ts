@@ -1,26 +1,29 @@
-import { optionTypeAsStringUnion, optionTypeUnion, parsedOption } from "../types";
+import { parsedOption } from "../types";
 import { tagUnindent } from "../utils";
 
 export function printOptions(_: { options: parsedOption[]; required: boolean }): string {
     const { options, required } = _;
-    // prettier-ignore
-    const N = ({ optionName, flag }: { optionName: string; flag?: string }) => `${flag !== undefined ? "-" + flag : "  "} --${optionName} `;
-    // prettier-ignore
-    const n = Math.max(...options.map((_) => N(_).length));
-    // prettier-ignore
-    const T = ({ type }: { type: optionTypeAsStringUnion }) => `: ${type}`;
-    // prettier-ignore
-    const t = Math.max(...options.map((_) => T(_).length));
-    // prettier-ignore
-    const I = ({defaultValue} : {defaultValue? : optionTypeUnion}) => `${defaultValue !== undefined ? ` = ${JSON.stringify(defaultValue)}` : ""}`;
-    // prettier-ignore
-    const i = Math.max(...options.map((_) => I(_).length));
+    const optionAndFlagName = ({ optionName, flag }: { optionName: string; flag?: string }) =>
+        `${flag !== undefined ? "-" + flag : "  "} --${optionName} `;
+    const nameMaxLength = Math.max(...options.map((_) => optionAndFlagName(_).length));
+    const type = ({ type }: { type: string }) => `: ${type}`;
+    const typeMaxLength = Math.max(...options.map((_) => type(_).length));
+    const defaultValue = ({ defaultValue }: { defaultValue?: string }) =>
+        `${defaultValue !== undefined ? ` = ${JSON.stringify(defaultValue)}` : ""}`;
+    const defaultValueMaxLength = Math.max(...options.map((_) => defaultValue(_).length));
+
     return tagUnindent`
         ${required ? "Required" : "Non required"} options:
 
           ${[
               options
-                  .map((_) => N(_).padEnd(n, " ") + T(_).padEnd(t, " ") + I(_).padEnd(i, " ") + `  ${_.description}`)
+                  .map(
+                      (_) =>
+                          optionAndFlagName(_).padEnd(nameMaxLength, " ") +
+                          type(_).padEnd(typeMaxLength, " ") +
+                          defaultValue(_).padEnd(defaultValueMaxLength, " ") +
+                          `  ${_.description}`
+                  )
                   .join("\n"),
           ]}
     `;

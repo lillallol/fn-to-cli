@@ -1,13 +1,13 @@
 import * as path from "path";
-import { internalLibraryErrorMessage, tagUnindent } from "../utils/index";
+import { internalErrorMessage } from "../errorMessages";
+import { tagUnindent } from "../utils/index";
 
 export function getImportStatementsForCommandFns(_: {
-    parsedCommands: { absolutePathToFile: string; exportValue: "default" | "named"; commandName: string }[];
+    parsedCommands: { absolutePathToFile: string; exportValue: "default" | "named"; functionName: string; }[];
     absolutePathToOutput: string;
 }): string {
     const { absolutePathToOutput, parsedCommands } = _;
     const absolutePathsOfInputs = parsedCommands.map(({ absolutePathToFile }) => absolutePathToFile);
-    //@TODO I have no clue if this is gonna work for windows
     const moduleSpecifiers = absolutePathsOfInputs.map(
         (absolutePathToInput) =>
             "./" +
@@ -16,18 +16,18 @@ export function getImportStatementsForCommandFns(_: {
     );
 
     return parsedCommands
-        .map(({ exportValue, commandName: name }, i) => {
+        .map(({ exportValue, functionName }, i) => {
             if (exportValue === "default") {
                 return tagUnindent`
-                    const {default : ${name}} = require("${moduleSpecifiers[i]}");
+                    const {default : ${functionName}} = require("${moduleSpecifiers[i]}");
                 `;
             }
             if (exportValue === "named") {
                 return tagUnindent`
-                    const {${name}} = require("${moduleSpecifiers[i]}");
+                    const {${functionName}} = require("${moduleSpecifiers[i]}");
                 `;
             }
-            throw Error(internalLibraryErrorMessage);
+            throw Error(internalErrorMessage.internalLibraryErrorMessage);
         })
         .join("\n");
 }

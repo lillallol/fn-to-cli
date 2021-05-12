@@ -1,3 +1,4 @@
+import { errorMessages } from "../errorMessages";
 import { parsedOption, parsedCommandForCli } from "../types";
 import { tagUnindent } from "../utils/index";
 import { printCliSyntax } from "./printCliSyntax";
@@ -7,10 +8,10 @@ import { printPackageNameAndVersion } from "./printPackageNameAndVersion";
 export type IPrintCliOptionsDocumentation = (_: {
     parsedCommand: parsedCommandForCli;
     cleanArgv: string[];
-    optionNamesHash: { [x: string]: boolean };
+    optionNamesSet: Set<string>;
     optionNameToParsedOption: { [x: string]: parsedOption };
     commandName: string;
-    flagNamesHash: { [x: string]: boolean };
+    flagNamesSet: Set<string>;
     flagNameToOptionNameHash: { [x: string]: string };
     packageVersion: string;
     packageName: string;
@@ -23,9 +24,9 @@ export const printCliOptionsDocumentation: IPrintCliOptionsDocumentation = funct
         cleanArgv,
         commandName,
         flagNameToOptionNameHash,
-        flagNamesHash,
+        flagNamesSet,
         optionNameToParsedOption,
-        optionNamesHash,
+        optionNamesSet,
         parsedCommand,
         packageName,
         packageVersion,
@@ -36,18 +37,18 @@ export const printCliOptionsDocumentation: IPrintCliOptionsDocumentation = funct
     const options: parsedOption[] = (() => {
         if (cleanArgv.length > 1) {
             return cleanArgv.slice(0, -1).map((arg) => {
-                if (arg.startsWith("--") && optionNamesHash[arg.slice(2)])
+                if (arg.startsWith("--") && optionNamesSet.has(arg.slice(2)))
                     return optionNameToParsedOption[arg.slice(2)];
-                if (arg.startsWith("--") && optionNamesHash[arg.slice(2)] !== true) {
-                    throw Error(_errorMessages.optionDoesNotExistInCommand(arg.slice(2), commandName, false));
+                if (arg.startsWith("--") && !optionNamesSet.has(arg.slice(2))) {
+                    throw Error(errorMessages.helpGotBadOptionFlag(arg.slice(2), commandName, false));
                 }
-                if (arg.startsWith("-") && flagNamesHash[arg.slice(1)]) {
+                if (arg.startsWith("-") && flagNamesSet.has(arg.slice(1))) {
                     return optionNameToParsedOption[flagNameToOptionNameHash[arg.slice(1)]];
                 }
-                if (arg.startsWith("-") && flagNamesHash[arg.slice(1)] !== true) {
-                    throw Error(_errorMessages.optionDoesNotExistInCommand(arg.slice(1), commandName, true));
+                if (arg.startsWith("-") && !flagNamesSet.has(arg.slice(1))) {
+                    throw Error(errorMessages.helpGotBadOptionFlag(arg.slice(1), commandName, true));
                 }
-                throw Error(_errorMessages.invalidOptionFlag(arg));
+                throw Error(errorMessages.helpGotBadArgument(arg));
             });
         } else {
             // this clause is for when options is [] for the case of calling non strict single command line with --help/-h only
@@ -56,8 +57,8 @@ export const printCliOptionsDocumentation: IPrintCliOptionsDocumentation = funct
     })();
 
     options.forEach(({ optionName: name }) => {
-        if (optionNamesHash[name] !== true) {
-            throw Error(_errorMessages.optionDoesNotExistInCommand(name, commandName, false));
+        if (!optionNamesSet.has(name)) {
+            throw Error(errorMessages.helpGotBadOptionFlag(name, commandName, false));
         }
     });
 
@@ -101,32 +102,7 @@ export const printCliOptionsDocumentation: IPrintCliOptionsDocumentation = funct
             Description:
 
               ${[parsedCommand.description]}
-
         `);
     }
     return documentationParts.join("\n\n");
-};
-
-export const _errorMessages = {
-    optionDoesNotExistInCommand: (optionName: string, commandName: string, isFlag: boolean): string => tagUnindent`
-        -h or --help has been encountered so printing documentation
-
-        ${isFlag ? "Flag" : "Option"} with name:
-
-            ${optionName}
-
-        does not exist in command with name:
-
-            ${commandName}
-
-    `,
-    invalidOptionFlag: (optionName: string): string => tagUnindent`
-        -h or --help has been encountered so printing documentation
-
-        Invalid option/flag:
-
-            ${optionName}
-
-        It has to start with "--" for option or "-" for flag.
-    `,
 };

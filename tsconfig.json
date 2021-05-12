@@ -10,7 +10,10 @@
         "module": "CommonJS",
         "target": "ESNext",
         "declaration": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "plugins": [
+            { "transform": "typescript-is/lib/transform-inline/transformer" }
+        ]
     },
     "include": [
         "./src/**/*.ts"

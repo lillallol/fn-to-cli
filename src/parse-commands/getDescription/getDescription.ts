@@ -1,142 +1,38 @@
 import { JSDoc } from "typescript";
-import { getJSDocTagValue, getJSDocTagLessValue, tagUnindent, internalLibraryErrorMessage } from "../../utils/index";
+import { getJSDocTagValue, getJSDocTagLessValue } from "../../utils/index";
+import { errorMessages, internalErrorMessage } from "../../errorMessages";
+import { constants } from "../../constants";
 
-export function _getDescription(_: {
-    commandName: string;
-    optionName: string | undefined;
-    JSDoc: JSDoc;
-    absolutePathToInput: string;
-}): string {
-    const { absolutePathToInput, commandName, optionName, JSDoc } = _;
-
-    const tagFullDescriptions: (string | null)[] = getJSDocTagValue(JSDoc, "description");
+export function _getDescription(_: { commandName: string; optionName: string | undefined; JSDoc: JSDoc }): string {
+    const { commandName, optionName, JSDoc } = _;
+    const { descriptionJsDocTagName } = constants;
+    const tagFullDescriptions: (string | null)[] = getJSDocTagValue(JSDoc, descriptionJsDocTagName);
     const tagFullDescriptionValue: string | null = (() => {
         if (tagFullDescriptions.length === 0) return null; // no description tag
         if (tagFullDescriptions.length > 1) {
             throw Error(
-                _errorMessages.astNodeHasMoreThanOneJSDocDescriptionTags({
+                errorMessages.astNodeHasMoreThanOneJSDocDescriptionTags({
                     commandName,
                     optionName,
-                    absolutePathToInput,
                 })
             );
         }
         if (tagFullDescriptions.length === 1) return tagFullDescriptions[0]; //description tag without value
-        throw Error(internalLibraryErrorMessage);
+        throw Error(internalErrorMessage.internalLibraryErrorMessage);
     })();
     const tagLessDescriptionValue: string | null = getJSDocTagLessValue(JSDoc);
     if (tagLessDescriptionValue !== null && tagFullDescriptionValue !== null) {
         throw Error(
-            _errorMessages.astNodeHasBothATagLessAndTagFullDescription({
+            errorMessages.astNodeHasBothATagLessAndTagFullDescription({
                 optionName,
                 commandName,
-                absolutePathToInput,
             })
         );
     }
     const descriptionValue = tagLessDescriptionValue ?? tagFullDescriptionValue;
     if (descriptionValue === null) {
-        throw Error(_errorMessages.astNodeHasNoJSDocDescriptionValue({ commandName, optionName, absolutePathToInput }));
+        throw Error(errorMessages.astNodeHasNoJSDocDescriptionValue({ commandName, optionName }));
     }
 
     return descriptionValue;
 }
-
-export const _errorMessages = {
-    memberHasNoJSDocComment: (_: {
-        commandName: string;
-        optionName: string | undefined;
-        absolutePathToInput: string;
-    }): string => tagUnindent`
-        Command with name:
-
-            ${_.commandName}
-
-        in path:
-
-            ${_.absolutePathToInput}
-
-        ${[
-            _.optionName === undefined
-                ? ""
-                : tagUnindent`
-        has option with name:
-
-            ${_.optionName}
-        
-        that`,
-        ]} does not have JSDoc comment.
-    `,
-    astNodeHasNoJSDocDescriptionValue: (_: {
-        commandName: string;
-        optionName: string | undefined;
-        absolutePathToInput: string;
-    }): string => tagUnindent`
-        Command with name:
-
-            ${_.commandName}
-
-        in path:
-
-            ${_.absolutePathToInput}
-
-        ${[
-            _.optionName === undefined
-                ? ""
-                : tagUnindent`
-        has option with name:
-
-            ${_.optionName}
-        
-        that`,
-        ]} has no description value in its JSDoc comment.
-    `,
-    astNodeHasMoreThanOneJSDocDescriptionTags: (_: {
-        commandName: string;
-        optionName: string | undefined;
-        absolutePathToInput: string;
-    }): string => tagUnindent`
-        Command with name:
-
-            ${_.commandName}
-
-        in path:
-
-            ${_.absolutePathToInput}
-
-        ${[
-            _.optionName === undefined
-                ? ""
-                : tagUnindent`
-        has option with name:
-
-            ${_.optionName}
-
-        that`,
-        ]} has more than one JSDoc @description tags.
-    `,
-    astNodeHasBothATagLessAndTagFullDescription: (_: {
-        commandName: string;
-        optionName: string | undefined;
-        absolutePathToInput: string;
-    }): string => tagUnindent`
-        Command with name:
-
-            ${_.commandName}
-
-        in path:
-
-            ${_.absolutePathToInput}
-
-        ${[
-            _.optionName === undefined
-                ? ""
-                : tagUnindent`
-        has option with name:
-
-            ${_.optionName}
-        
-        that`,
-        ]} has both tag less and tag full JSDoc description.
-    `,
-};

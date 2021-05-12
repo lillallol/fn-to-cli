@@ -22,14 +22,20 @@ export const printCliCommandsDocumentation: IPrintCliCommandsDocumentation = fun
 
         Use:
 
-          ${packageName} <command> --help
+          ${packageName} <command> [--help|-h]
 
         for further information regarding each command.
 
         Use:
 
-          ${packageName} <command> [--<option>|-<flag>]+ --help
+          ${packageName} <command> [--<option>|-<flag>]+ [--help|-h]
 
         for information regarding specific options of a command.
+
+        Use:
+
+          ${packageName} [--version|-v]
+
+        to get the version of the current CLI executable.
     `;
 };

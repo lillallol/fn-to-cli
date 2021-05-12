@@ -1,4 +1,4 @@
-import { internalLibraryErrorMessage } from "./internalLibraryErrorMessage";
+import { internalErrorMessage } from "../../errorMessages";
 
 /**
  * @description
@@ -16,7 +16,7 @@ export function getIndexOfFirstDuplicateValueOfArray(array: unknown[]): number {
         if (typeof v === "number") {
             return v;
         }
-        throw Error(internalLibraryErrorMessage);
+        throw Error(internalErrorMessage.internalLibraryErrorMessage);
     }
     return -1;
 }

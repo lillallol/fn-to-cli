@@ -1,8 +1,5 @@
-export { internalLibraryErrorMessage } from "./es-utils/internalLibraryErrorMessage";
 export { getJSDocTagLessValue } from "./ts-ast-utils/getJSDocTagLessValue";
-export { hasSingleJSDocComment } from "./ts-ast-utils/hasSingleJSDocComment";
 export { lastElement } from "./es-utils/lastElement";
-export { isDictionaryObject } from "./es-utils/isDictionaryObject";
 export { getStatementsOf } from "./ts-ast-utils/getStatementsOf/getStatementsOf";
 export { hasDefaultModifier } from "./ts-ast-utils/hasDefaultModifier/hasDefaultModifier";
 export { hasExportModifier } from "./ts-ast-utils/hasExportModifier/hasExportModifier";

@@ -1,5 +1,5 @@
 import { JSDoc } from "typescript";
-import { internalLibraryErrorMessage } from "../es-utils/internalLibraryErrorMessage";
+import { internalErrorMessage } from "../../errorMessages";
 
 /**
  * @description
@@ -17,5 +17,5 @@ export function getJSDocTagLessValue(JSDoc: JSDoc): null | string {
     const { comment } = JSDoc;
     if (comment === undefined) return null;
     if (typeof comment === "string") return comment;
-    throw Error(internalLibraryErrorMessage);
+    throw Error(internalErrorMessage.internalLibraryErrorMessage);
 }

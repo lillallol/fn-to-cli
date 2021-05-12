@@ -8,10 +8,9 @@ export function createFs(
     const absolutePathToTestFolder = path.resolve(dirname,"test" ,_.folder);
     const fileNameIndexToAbsolutePath: { [fileName: string]: string } = {};
     try {
-        fs.rmdirSync(absolutePathToTestFolder, { recursive: true });
-    } catch (e) {
-        console.log(e);
-        //
+        fs.rmSync(absolutePathToTestFolder, { recursive: true });
+    } catch {
+        // console.log(e);
     }
     fs.mkdirSync(absolutePathToTestFolder,{recursive : true});
     Object.entries(_.fs).forEach(([fileName, code]) => {

@@ -1,4 +1,8 @@
 export type parsedCommandForFnToCli = {
+    /**
+     * @description
+     * This is only needed for printing the command documentation.
+     */
     description: string;
     /**
      * @description
@@ -6,31 +10,52 @@ export type parsedCommandForFnToCli = {
      * value is a default export.
      */
     exportValue: "named" | "default";
+    /**
+     * @description
+     * This is the `@CLI` value, or if it has no value, it is the function name.
+     */
     commandName: string;
+    /**
+     * @description
+     * This the function name. This is used to import the command into the bin file.
+     */
+    functionName: string;
     /**
      * @description
      * Absolute path to the file that has the command function.
      */
     absolutePathToFile: string;
     options: parsedOption[];
-}
+};
 
 export type parsedCommandForCli = {
+    /**
+     * @description
+     * This is only needed for printing the command documentation.
+     */
     description: string;
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    command: Function;
+    commandName: string;
     options: parsedOption[];
-}
+    command: Function;
+};
 
 export type parsedOption = {
-    defaultValue?: optionTypeUnion;
+    /**
+     * @description
+     * This is only needed for printing the command documentation.
+     */
+    defaultValue?: string;
+    /**
+     * @description
+     * This is only needed for printing the command documentation.
+     */
     description: string;
     optionName: string;
     isOptional: boolean;
     flag?: string;
-    type: optionTypeAsStringUnion;
+    /**
+     * @description
+     * This is only needed for printing the command documentation.
+     */
+    type: string;
 };
-
-export type optionTypeUnion = string | number | boolean | string[] | number[] | boolean[];
-export type optionTypeAsStringUnion = "string" | "number" | "boolean" | "string[]" | "number[]" | "boolean[]";
-export const arrayFromOptionTypesAsStrings = ["string", "number", "boolean", "string[]", "number[]", "boolean[]"];
