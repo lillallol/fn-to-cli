@@ -9,7 +9,7 @@ export function printOptions(_: { options: parsedOption[]; required: boolean }):
     const type = ({ type }: { type: string }) => `: ${type}`;
     const typeMaxLength = Math.max(...options.map((_) => type(_).length));
     const defaultValue = ({ defaultValue }: { defaultValue?: string }) =>
-        `${defaultValue !== undefined ? ` = ${JSON.stringify(defaultValue)}` : ""}`;
+        `${defaultValue !== undefined ? ` = ${defaultValue}` : ""}`;
     const defaultValueMaxLength = Math.max(...options.map((_) => defaultValue(_).length));
 
     return tagUnindent`

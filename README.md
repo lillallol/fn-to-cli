@@ -15,6 +15,7 @@
     - [Motivation](#motivation)
     - [Contributing](#contributing)
     - [Changelog](#changelog)
+        - [2.0.2](#202)
         - [2.0.1](#201)
         - [2.0.0](#200)
         - [1.0.0](#100)
@@ -354,6 +355,10 @@ You will find the following commands useful:
     Take a look at the related configuration `./unimportedrc.json`.
 
 ## Changelog
+
+### 2.0.2
+
+Removed the unnecessary quotation marks from the default values in the CLI generated documentation.
 
 ### 2.0.1
 
