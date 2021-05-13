@@ -1,20 +1,24 @@
+# fn-to-cli
+
 ## Table of contents
 
 <!--#region toc-->
 
-- [Table of contents](#table-of-contents)
-- [Installation](#installation)
-- [Description](#description)
-- [Code coverage](#code-coverage)
-- [Quick start](#quick-start)
-- [Example](#example)
-- [Documentation](#documentation)
-- [Motivation](#motivation)
-- [Contributing](#contributing)
-- [Changelog](#changelog)
-    - [2.0.0](#2.0.0)
-    - [1.0.0](#1.0.0)
-- [License](#license)
+- [fn-to-cli](#fn-to-cli)
+    - [Table of contents](#table-of-contents)
+    - [Installation](#installation)
+    - [Description](#description)
+    - [Code coverage](#code-coverage)
+    - [Quick start](#quick-start)
+    - [Example](#example)
+    - [Documentation](#documentation)
+    - [Motivation](#motivation)
+    - [Contributing](#contributing)
+    - [Changelog](#changelog)
+        - [2.0.1](#201)
+        - [2.0.0](#200)
+        - [1.0.0](#100)
+    - [License](#license)
 
 <!--#endregion toc-->
 
@@ -350,6 +354,12 @@ You will find the following commands useful:
     Take a look at the related configuration `./unimportedrc.json`.
 
 ## Changelog
+
+### 2.0.1
+
+**bug fixes:**
+
+Moved `typescript-is` from development dependencies to dependencies.
 
 ### 2.0.0
 
