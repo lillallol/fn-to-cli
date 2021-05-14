@@ -15,7 +15,7 @@
         "test-example": "cd example;npm remove fn-to-cli;npm install ../;npm run build;npm run test;cd ../;",
         "build-ts": "rm -rf ./dist; npx ttsc -p ./tsconfig.build.json",
         "build-bin": "rm -rf ./bin/bin.js; node build-bin.js",
-        "build-md": "md-in-place",
+        "build-md": "node ./bin/bin.js -h > ./documentation.txt;npx md-in-place",
         "build": "npm run build-ts && npm run build-bin && npm run build-md",
         "pre-bump": "npm run dead-files && npm run spell-check && npm run lint && npm run test-src && npm run build && npm run test-example && git add --all && git commit",
         "release": "npm run pre-bump && npm publish --access public && npm run after-bump",

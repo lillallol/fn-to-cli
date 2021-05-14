@@ -15,6 +15,7 @@
     - [Motivation](#motivation)
     - [Contributing](#contributing)
     - [Changelog](#changelog)
+        - [2.0.3](#203)
         - [2.0.2](#202)
         - [2.0.1](#201)
         - [2.0.0](#200)
@@ -232,6 +233,35 @@ If something goes wrong you will receive helpful error messages that will guide 
 
 ## Documentation
 
+Execute the following command:
+
+```bash
+npx fn-to-cli --help
+```
+
+to get the CLI documentation:
+
+<!--#region documentation !./documentation.txt-->
+
+```txt
+CLI syntax:
+
+  fn-to-cli fnToCLI? [[--<option> | -<flag>] <value>]#
+
+Description:
+
+  Converts typescript functions to CLI.
+
+Non required options:
+
+  -t --pathToTsconfig    : string  = "./tsconfig.json"  Path to `tsconfig.json`.
+  -p --pathToPackageJson : string  = "./package.json"   Path to `package.json`.
+  -s --strict            : boolean = false              For one command CLI, it is optional to write the command name when using the CLI. Give `true` to disable that.
+
+```
+
+<!--#endregion documentation-->
+
 The CLI generator works by searching deeply in the directory defined by the property `compilerOptions.outDir` of `tsconfig.json`, for all the `.d.ts` files that have functions with `@CLI` JSDoc tag. These functions become commands to the generated CLI.
 
 The generated CLI is saved to the path defined by the `bin` property of `package.json`, and imports js functions from the directories `compilerOptions.outDir`, and `node_modules`, so it will not work if these folders are missing or moved.
@@ -355,6 +385,10 @@ You will find the following commands useful:
     Take a look at the related configuration `./unimportedrc.json`.
 
 ## Changelog
+
+### 2.0.3
+
+Removed package name and version from the CLI generated documentation.
 
 ### 2.0.2
 

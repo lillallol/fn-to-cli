@@ -68,8 +68,7 @@ export function cliFactory(
             console.log(
                 printCliCommandsDocumentation({
                     commandNames,
-                    packageName,
-                    packageVersion,
+                    packageName
                 })
             );
             return;
@@ -99,7 +98,6 @@ export function cliFactory(
                     commandName,
                     flagNamesSet,
                     flagNameToOptionNameHash,
-                    packageVersion,
                     packageName,
                     commandHasRequiredOptions,
                     isSingleOptionalCommandCli,

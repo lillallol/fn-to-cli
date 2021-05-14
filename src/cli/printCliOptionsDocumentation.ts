@@ -3,7 +3,6 @@ import { parsedOption, parsedCommandForCli } from "../types";
 import { tagUnindent } from "../utils/index";
 import { printCliSyntax } from "./printCliSyntax";
 import { printOptions } from "./printOptions";
-import { printPackageNameAndVersion } from "./printPackageNameAndVersion";
 
 export type IPrintCliOptionsDocumentation = (_: {
     parsedCommand: parsedCommandForCli;
@@ -13,7 +12,6 @@ export type IPrintCliOptionsDocumentation = (_: {
     commandName: string;
     flagNamesSet: Set<string>;
     flagNameToOptionNameHash: { [x: string]: string };
-    packageVersion: string;
     packageName: string;
     commandHasRequiredOptions: boolean;
     isSingleOptionalCommandCli: boolean;
@@ -29,7 +27,6 @@ export const printCliOptionsDocumentation: IPrintCliOptionsDocumentation = funct
         optionNamesSet,
         parsedCommand,
         packageName,
-        packageVersion,
         commandHasRequiredOptions,
         isSingleOptionalCommandCli,
     } = _;
@@ -85,12 +82,6 @@ export const printCliOptionsDocumentation: IPrintCliOptionsDocumentation = funct
 
     if (cleanArgv.length === 1) {
         documentationParts.unshift(tagUnindent`
-            ${[
-                printPackageNameAndVersion({
-                    packageName,
-                    packageVersion,
-                }),
-            ]}
             ${[
                 printCliSyntax({
                     commandHasRequiredOptions,
